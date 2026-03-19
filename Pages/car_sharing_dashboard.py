@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd 
+import altair as alt
 
 # Function to load CSV files into dataframes
 @st.cache_data
@@ -37,3 +38,39 @@ with col2:
 with col3: 
     st.metric(label="Total Distance (km)", value=f"{total_distance:,.2f}") 
 trips_merged.head()
+#First Graphic
+trips_over_time = trips_merged.groupby("year").size()
+
+st.subheader("trips Over Time")
+st.line_chart(trips_over_time)
+
+#Second Graphic 
+revenue_per_model = (
+    trips_merged
+    .groupby("model")["revenue"]
+    .sum()
+    .reset_index()
+    .sort_values(by="revenue", ascending=True)
+)
+revenue_per_model = trips_merged.groupby("model")["revenue"].sum()
+
+st.subheader("Revenue per Car Model")
+st.bar_chart(revenue_per_model)
+
+chart = alt.Chart(revenue_per_model).mark_bar().encode(
+    x="revenue:Q",
+    y=alt.Y("model:N", sort=None),
+    color=alt.Color("model:N", scale=alt.Scale(scheme="greenblue"))
+)
+
+#Third Graphic
+
+revenue_time = trips_merged.groupby("year")["revenue"].sum().sort_index()
+cumulative_revenue = revenue_time.cumsum()
+
+st.subheader("Cumulative Revenue Over Time")
+st.line_chart(cumulative_revenue)
+
+#Fourth Graphic
+trips_per_model = trips_merged.groupby("model").size()
+st.bar_chart(trips_per_model)
